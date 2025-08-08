@@ -1,521 +1,501 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" >
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>MUSICMUSICMUSIC — Apple-style Player</title>
-<style>
-  :root{
-    --bg:#f5f5f7; --card:#fff; --muted:#6b6b70; --accent:#0071e3; --text:#0b0b0b;
-    --now:#ffffff;
-  }
-  [data-theme="dark"]{
-    --bg:#0b0b0d; --card:#0f0f11; --muted:#9a9a9a; --accent:#1db954; --text:#e7e7e7; --now:#0c0c0d;
-  }
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Apple Music Style Google Drive Player</title>
+  <style>
+    :root {
+      --bg: #f5f5f7;
+      --card: #fff;
+      --muted: #6b6b70;
+      --accent: #0071e3;
+      --text: #0b0b0b;
+      --now: #ffffff;
+    }
+    [data-theme="dark"] {
+      --bg: #0b0b0d;
+      --card: #0f0f11;
+      --muted: #9a9a9a;
+      --accent: #1db954;
+      --text: #e7e7e7;
+      --now: #0c0c0d;
+    }
+    * {
+      box-sizing: border-box;
+    }
+    html, body {
+      height: 100%;
+      margin: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      user-select: none;
+    }
+    .app {
+      display: flex;
+      height: 100vh;
+      gap: 18px;
+      padding: 18px;
+    }
+    .sidebar {
+      width: 260px;
+      background: var(--card);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+    }
+    .sidebar h1 {
+      margin: 0;
+      font-size: 20px;
+      letter-spacing: 0.5px;
+    }
+    .sidebar .nav button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.3s ease;
+    }
+    .sidebar .nav button:hover {
+      color: var(--text);
+      background: rgba(0,0,0,0.03);
+    }
+    .sidebar .playlists {
+      margin-top: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-height: 40vh;
+      overflow: auto;
+      padding-right: 6px;
+    }
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+    .top {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 8px 12px;
+      background: var(--card);
+      border-radius: 12px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+    .search {
+      flex: 1;
+      padding: 10px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(0,0,0,0.06);
+      background: transparent;
+      color: var(--text);
+      font-size: 15px;
+      transition: border-color 0.3s ease;
+    }
+    .search:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    .controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .btn {
+      padding: 8px 12px;
+      border-radius: 8px;
+      border: none;
+      background: transparent;
+      cursor: pointer;
+      color: var(--muted);
+      font-size: 14px;
+      transition: color 0.3s ease, background-color 0.3s ease;
+    }
+    .btn:hover {
+      color: var(--text);
+      background: rgba(0,0,0,0.03);
+    }
+    .toggle {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .content {
+      flex: 1;
+      overflow: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill,minmax(200px,1fr));
+      gap: 16px;
+    }
+    .list {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .card {
+      background: var(--card);
+      border-radius: 10px;
+      overflow: hidden;
+      box-shadow: 0 6px 18px rgba(0,0,0,0.04);
+      display: flex;
+      flex-direction: column;
+      user-select:none;
+    }
+    .art {
+      height: 170px;
+      width: 100%;
+      background: linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.02));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .art img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      user-select:none;
+      pointer-events:none;
+    }
+    .meta {
+      padding: 10px;
+      user-select:text;
+    }
+    .meta .title {
+      font-weight: 600;
+      margin-bottom: 6px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .meta .sub {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .card .playrow {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 10px;
+      border-top: 1px solid rgba(0,0,0,0.04);
+      user-select:none;
+    }
+    .smallbtn {
+      background: transparent;
+      border: none;
+      color: var(--accent);
+      cursor: pointer;
+      font-size: 16px;
+      padding: 4px 8px;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+    }
+    .smallbtn:hover {
+      background-color: var(--accent);
+      color: #fff;
+    }
+    /* List mode adjustments */
+    .list .card {
+      flex-direction: row;
+      align-items: center;
+      height: 90px;
+      padding: 0;
+    }
+    .list .art {
+      height: 90px;
+      width: 90px;
+      flex-shrink: 0;
+      border-radius: 0;
+    }
+    .list .meta {
+      flex: 1;
+      padding: 10px 12px;
+      overflow: hidden;
+    }
+    .list .card .playrow {
+      flex-direction: column;
+      justify-content: center;
+      padding: 0 10px 0 0;
+      gap: 6px;
+      height: 90px;
+      width: 90px;
+      box-sizing: border-box;
+    }
 
-  *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial; background:var(--bg); color:var(--text);}
+    /* Now playing bar */
+    .nowbar {
+      height: 92px;
+      background: var(--now);
+      border-radius: 12px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      box-shadow: 0 -6px 18px rgba(0,0,0,0.04);
+      user-select:none;
+    }
+    .now-left {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      width: 320px;
+      flex-shrink: 0;
+    }
+    .now-left img {
+      width: 68px;
+      height: 68px;
+      border-radius: 6px;
+      object-fit: cover;
+      user-select:none;
+      pointer-events:none;
+    }
+    .now-mid {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      user-select:none;
+    }
+    .now-mid .title {
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .now-mid .artist {
+      font-size: 13px;
+      color: var(--muted);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .now-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+      user-select:none;
+    }
+    .play-controls {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .bigbtn {
+      width: 44px;
+      height: 44px;
+      border-radius: 999px;
+      border: none;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-size: 16px;
+      user-select:none;
+    }
+    .iconbtn {
+      background: transparent;
+      border: none;
+      color: var(--muted);
+      cursor: pointer;
+      font-size: 18px;
+      user-select:none;
+    }
 
-  /* Layout */
-  .app {display:flex;height:100vh;gap:18px;padding:18px}
-  .sidebar {width:260px;background:var(--card);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 6px 18px rgba(0,0,0,0.06)}
-  .sidebar h1{margin:0;font-size:20px;letter-spacing:0.5px}
-  .sidebar .nav button{display:block;width:100%;text-align:left;padding:10px;border-radius:8px;border:none;background:transparent;color:var(--muted);cursor:pointer;font-size:14px}
-  .sidebar .nav button:hover{color:var(--text);background:rgba(0,0,0,0.03)}
-  .sidebar .playlists{margin-top:auto;display:flex;flex-direction:column;gap:6px;max-height:40vh;overflow:auto;padding-right:6px}
+    /* playlist menu */
+    .playlist-menu {
+      position: fixed;
+      background: var(--card);
+      padding: 8px;
+      border-radius: 8px;
+      box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+      z-index: 9999;
+      user-select:none;
+    }
+    .playlist-menu > div {
+      padding: 6px 10px;
+      cursor: pointer;
+      border-radius: 6px;
+      transition: background-color 0.2s ease;
+    }
+    .playlist-menu > div:hover {
+      background-color: var(--accent);
+      color: white;
+    }
+    /* drag & drop styling */
+    .dragging {
+      opacity: 0.4;
+      border: 2px dashed var(--accent);
+    }
+    .drag-over {
+      border: 2px dashed var(--accent);
+    }
 
-  .main {flex:1;display:flex;flex-direction:column;gap:14px}
-  .top {display:flex;align-items:center;gap:12px;padding:8px 12px;background:var(--card);border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.04)}
-  .search {flex:1;padding:10px 14px;border-radius:999px;border:1px solid rgba(0,0,0,0.06);background:transparent;color:var(--text)}
-  .controls {display:flex;gap:8px;align-items:center}
-  .btn {padding:8px 12px;border-radius:8px;border:none;background:transparent;cursor:pointer;color:var(--muted)}
-  .btn:hover{color:var(--text)}
-  .toggle {display:flex;gap:8px;align-items:center}
-
-  .content {flex:1;overflow:auto}
-  .grid {display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:16px}
-  .list {display:flex;flex-direction:column;gap:8px}
-  .card {background:var(--card);border-radius:10px;overflow:hidden;box-shadow:0 6px 18px rgba(0,0,0,0.04);display:flex;flex-direction:column}
-  .art {height:170px;width:100%;background:linear-gradient(180deg, rgba(0,0,0,0.03), rgba(0,0,0,0.02));display:flex;align-items:center;justify-content:center}
-  .art img{width:100%;height:100%;object-fit:cover}
-  .meta {padding:10px}
-  .meta .title{font-weight:600;margin-bottom:6px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .meta .sub{font-size:13px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .card .playrow{display:flex;justify-content:space-between;padding:8px 10px;border-top:1px solid rgba(0,0,0,0.04)}
-  .smallbtn{background:transparent;border:none;color:var(--accent);cursor:pointer;font-size:16px}
-
-  /* Now playing bar */
-  .nowbar {height:92px;background:var(--now);border-radius:12px;padding:10px 14px;display:flex;align-items:center;gap:14px;box-shadow:0 -6px 18px rgba(0,0,0,0.04)}
-  .now-left{display:flex;gap:12px;align-items:center;width:320px}
-  .now-left img{width:68px;height:68px;border-radius:6px;object-fit:cover}
-  .now-mid{flex:1;display:flex;flex-direction:column;gap:6px}
-  .now-mid .title{font-weight:700}
-  .now-mid .artist{font-size:13px;color:var(--muted)}
-  .now-controls{display:flex;flex-direction:column;gap:8px;align-items:center}
-  .play-controls{display:flex;gap:8px;align-items:center}
-  .bigbtn{width:44px;height:44px;border-radius:999px;border:none;background:var(--accent);color:#fff;cursor:pointer;font-size:16px}
-  .iconbtn{background:transparent;border:none;color:var(--muted);cursor:pointer;font-size:18px}
-
-  /* playlist menu */
-  .playlist-menu{position:fixed;background:var(--card);padding:8px;border-radius:8px;box-shadow:0 8px 30px rgba(0,0,0,0.15);z-index:999}
-
-  /* responsive */
-  @media (max-width:900px){
-    .sidebar{display:none}
-    .now-left{width:180px}
-  }
-</style>
+    /* responsive */
+    @media (max-width:900px) {
+      .sidebar {
+        display: none;
+      }
+      .now-left {
+        width: 180px;
+      }
+    }
+  </style>
 </head>
 <body data-theme="light">
-<div style="padding:12px 16px">
-  <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
-    <h2 style="margin:0">MUSICMUSICMUSIC</h2>
-    <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
-      <label style="font-size:13px;color:var(--muted)">Dark</label>
-      <input id="themeToggle" type="checkbox" />
+  <div style="padding:12px 16px">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">
+      <h2 style="margin:0">MUSICMUSICMUSIC</h2>
+      <div style="margin-left:auto;display:flex;gap:10px;align-items:center">
+        <label style="font-size:13px;color:var(--muted); user-select:none;">Dark</label>
+        <input id="themeToggle" type="checkbox" />
+      </div>
+    </div>
+
+    <div class="app">
+      <aside class="sidebar">
+        <h1>Library</h1>
+        <div class="nav">
+          <button onclick="showAll()">All Songs</button>
+          <button onclick="showPlaylists()">Playlists</button>
+          <button onclick="showSearch()">Search</button>
+        </div>
+
+        <div style="margin-top:6px;display:flex;gap:8px">
+          <input id="newPlaylistName" placeholder="New playlist" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" />
+          <button class="btn" onclick="createPlaylist()">➕</button>
+        </div>
+
+        <div class="playlists" id="playlistList"></div>
+      </aside>
+
+      <main class="main">
+        <div class="top">
+          <input id="searchInput" class="search" placeholder="Search songs, artists..." />
+          <div class="controls">
+            <button class="btn" id="viewToggle">Grid</button>
+            <button class="btn" id="sortBtn">Sort: A→Z</button>
+            <div style="width:12px"></div>
+            <button class="btn" id="shuffleBtn">Shuffle ⤨</button>
+            <button class="btn" id="repeatBtn">Repeat: Off</button>
+          </div>
+        </div>
+
+        <div class="content" id="contentArea">
+          <div id="tracks" class="grid"></div>
+          <div id="empty" style="display:none;padding:20px;color:var(--muted)">No tracks found.</div>
+        </div>
+
+        <div class="nowbar" id="nowbar">
+          <div class="now-left">
+            <img id="nowArt" src="" alt="art" />
+            <div>
+              <div id="nowTitle" class="title">Not playing</div>
+              <div id="nowArtist" class="artist"></div>
+            </div>
+          </div>
+
+          <div class="now-mid">
+            <div style="display:flex;gap:10px;align-items:center">
+              <div style="flex:1">
+                <input id="seek" type="range" min="0" max="100" value="0" style="width:100%" />
+              </div>
+              <div style="width:64px;text-align:right;color:var(--muted);font-size:13px" id="timeLabel">0:00</div>
+            </div>
+
+            <div style="display:flex;justify-content:center;align-items:center" class="play-controls">
+              <button class="iconbtn" onclick="prevTrack()">⏮️</button>
+              <button class="bigbtn" id="playPause" onclick="togglePlay()">▶️</button>
+              <button class="iconbtn" onclick="nextTrack()">⏭️</button>
+            </div>
+          </div>
+
+          <div style="width:180px;display:flex;flex-direction:column;align-items:flex-end">
+            <div style="font-size:13px;color:var(--muted)">Queue</div>
+            <div id="queueCount" style="font-weight:700">0</div>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 
-  <div class="app">
-    <aside class="sidebar">
-      <h1>Library</h1>
-      <div class="nav">
-        <button onclick="showAll()">All Songs</button>
-        <button onclick="showPlaylists()">Playlists</button>
-        <button onclick="showSearch()">Search</button>
-      </div>
+  <!-- Audio element -->
+  <audio id="audio" crossorigin="anonymous"></audio>
 
-      <div style="margin-top:6px;display:flex;gap:8px">
-        <input id="newPlaylistName" placeholder="New playlist" style="flex:1;padding:8px;border-radius:8px;border:1px solid rgba(0,0,0,0.06)" />
-        <button class="btn" onclick="createPlaylist()">➕</button>
-      </div>
+  <script>
+    // ==== CONFIG ====
+    const folderId = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';  // <-- Replace with your folder ID
+    const apiKey = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI';  // <-- Replace with your API key
 
-      <div class="playlists" id="playlistList"></div>
-    </aside>
+    // ==== STATE ====
+    let tracks = [];          // all tracks from Drive
+    let viewTracks = [];      // currently filtered/sorted view
+    let playlists = JSON.parse(localStorage.getItem('mm_playlists') || '{}');
+    let queue = [];           // queue (indices into viewTracks)
+    let currentIndex = -1;    // index in viewTracks of current track
+    let isPlaying = false;
+    let shuffle = false;
+    let repeatMode = 0;       // 0 off, 1 all, 2 one
+    let isGrid = true;
 
-    <main class="main">
-      <div class="top">
-        <input id="searchInput" class="search" placeholder="Search songs, artists..." />
-        <div class="controls">
-          <button class="btn" id="viewToggle">Grid</button>
-          <button class="btn" id="sortBtn">Sort: A→Z</button>
-          <div style="width:12px"></div>
-          <button class="btn" id="shuffleBtn">Shuffle ⤨</button>
-          <button class="btn" id="repeatBtn">Repeat: Off</button>
-        </div>
-      </div>
+    // DOM
+    const tracksEl = document.getElementById('tracks');
+    const searchInput = document.getElementById('searchInput');
+    const viewToggle = document.getElementById('viewToggle');
+    const shuffleBtn = document.getElementById('shuffleBtn');
+    const repeatBtn = document.getElementById('repeatBtn');
+    const audio = document.getElementById('audio');
+    const nowArt = document.getElementById('nowArt');
+    const nowTitle = document.getElementById('nowTitle');
+    const nowArtist = document.getElementById('nowArtist');
+    const playPauseBtn = document.getElementById('playPause');
+    const seek = document.getElementById('seek');
+    const timeLabel = document.getElementById('timeLabel');
+    const queueCount = document.getElementById('queueCount');
+    const playlistList = document.getElementById('playlistList');
+    const themeToggle = document.getElementById('themeToggle');
+    const newPlaylistNameInput = document.getElementById('newPlaylistName');
 
-      <div class="content" id="contentArea">
-        <div id="tracks" class="grid"></div>
-        <div id="empty" style="display:none;padding:20px;color:var(--muted)">No tracks found.</div>
-      </div>
+    // Album placeholder if art fails to load
+    const defaultArtURL = 'https://upload.wikimedia.org/wikipedia/commons/thumb/1/19/Music_note.svg/240px-Music_note.svg.png';
 
-      <div class="nowbar" id="nowbar">
-        <div class="now-left">
-          <img id="nowArt" src="" alt="art" />
-          <div>
-            <div id="nowTitle" class="title">Not playing</div>
-            <div id="nowArtist" class="artist"></div>
-          </div>
-        </div>
-
-        <div class="now-mid">
-          <div style="display:flex;gap:10px;align-items:center">
-            <div style="flex:1">
-              <input id="seek" type="range" min="0" max="100" value="0" style="width:100%" />
-            </div>
-            <div style="width:64px;text-align:right;color:var(--muted);font-size:13px" id="timeLabel">0:00</div>
-          </div>
-
-          <div style="display:flex;justify-content:center;align-items:center" class="play-controls">
-            <button class="iconbtn" onclick="prevTrack()">⏮️</button>
-            <button class="bigbtn" id="playPause" onclick="togglePlay()">▶️</button>
-            <button class="iconbtn" onclick="nextTrack()">⏭️</button>
-          </div>
-        </div>
-
-        <div style="width:180px;display:flex;flex-direction:column;align-items:flex-end">
-          <div style="font-size:13px;color:var(--muted)">Queue</div>
-          <div id="queueCount" style="font-weight:700">0</div>
-        </div>
-      </div>
-    </main>
-  </div>
-</div>
-
-<!-- Audio element -->
-<audio id="audio" crossorigin="anonymous"></audio>
-
-<script>
-/* =========================
-   CONFIG - put your values
-   ========================= */
-const folderId = '1DGz9zEQh29EAqTZpmWK5mwSj5HComnkn';
-const apiKey = 'AIzaSyDsYE91wH7UDwu8eZNbD1CFuVcilgYeZhI';
-
-/* =========================
-   State
-   ========================= */
-let tracks = [];            // all tracks from Drive
-let viewTracks = [];        // currently filtered/sorted view
-let playlists = JSON.parse(localStorage.getItem('mm_playlists') || '{}');
-let queue = [];             // queue (indices into viewTracks)
-let currentIndex = -1;      // index in viewTracks of current track
-let isPlaying = false;
-let shuffle = false;
-let repeatMode = 0; // 0 off, 1 all, 2 one
-let isGrid = true;
-
-/* DOM */
-const tracksEl = document.getElementById('tracks');
-const searchInput = document.getElementById('searchInput');
-const viewToggle = document.getElementById('viewToggle');
-const shuffleBtn = document.getElementById('shuffleBtn');
-const repeatBtn = document.getElementById('repeatBtn');
-const audio = document.getElementById('audio');
-const nowArt = document.getElementById('nowArt');
-const nowTitle = document.getElementById('nowTitle');
-const nowArtist = document.getElementById('nowArtist');
-const playPauseBtn = document.getElementById('playPause');
-const seek = document.getElementById('seek');
-const timeLabel = document.getElementById('timeLabel');
-const queueCount = document.getElementById('queueCount');
-const playlistList = document.getElementById('playlistList');
-const themeToggle = document.getElementById('themeToggle');
-
-/* theme */
-themeToggle.addEventListener('change', () => {
-  document.body.setAttribute('data-theme', themeToggle.checked ? 'dark' : 'light');
-});
-
-/* ========== Utilities ========== */
-function formatTime(sec){
-  if (!sec || isNaN(sec)) return '0:00';
-  const s = Math.floor(sec % 60).toString().padStart(2,'0');
-  const m = Math.floor(sec/60);
-  return `${m}:${s}`;
-}
-
-/* ========== Drive listing ========== */
-async function loadAllFromDrive() {
-  tracks = [];
-  let pageToken = '';
-  try {
-    do {
-      const q = encodeURIComponent(`'${folderId}' in parents and (mimeType contains 'audio/')`);
-      const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=nextPageToken,files(id,name,mimeType,thumbnailLink,md5Checksum)&pageSize=100${pageToken ? '&pageToken='+pageToken : ''}&key=${apiKey}`;
-      const r = await fetch(url);
-      const j = await r.json();
-      if (j.files) tracks = tracks.concat(j.files);
-      pageToken = j.nextPageToken || '';
-    } while(pageToken);
-  } catch(e){
-    console.error('Drive error', e);
-    alert('Failed to load files from Drive. Check folder ID, API key, and folder sharing settings.');
-  }
-
-  // normalize
-  tracks = tracks.map(t => ({
-    id: t.id,
-    name: t.name,
-    art: t.thumbnailLink || '',
-    mime: t.mimeType
-  }));
-  // default sorting A→Z
-  tracks.sort((a,b)=>a.name.localeCompare(b.name));
-  viewTracks = tracks.slice();
-  renderTracks();
-  updateQueueCount();
-}
-
-/* ========== Rendering ========== */
-function renderTracks(){
-  tracksEl.innerHTML = '';
-  if (!viewTracks || viewTracks.length === 0){
-    document.getElementById('empty').style.display = 'block';
-    return;
-  } else document.getElementById('empty').style.display = 'none';
-
-  if (isGrid){
-    tracksEl.className = 'grid';
-    viewTracks.forEach((t, idx) => {
-      const el = document.createElement('div');
-      el.className = 'card';
-      el.innerHTML = `
-        <div class="art"><img src="${escapeHtml(t.art || `https://via.placeholder.com/400x400?text=Music`)}" alt="art" onerror="this.src='https://via.placeholder.com/400x400?text=Music'"></div>
-        <div class="meta">
-          <div class="title">${escapeHtml(t.name)}</div>
-          <div class="sub">${escapeHtml(getArtistFromName(t.name))}</div>
-        </div>
-        <div class="playrow">
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="smallbtn" onclick="playFromView(${idx})">Play</button>
-            <button class="smallbtn" onclick="enqueue(${idx})">➕ Queue</button>
-          </div>
-          <div>
-            <button class="smallbtn" onclick="openPlaylistMenu(event, ${idx})">Add →</button>
-          </div>
-        </div>
-      `;
-      tracksEl.appendChild(el);
+    // ==== Theme toggle ====
+    themeToggle.addEventListener('change', () => {
+      document.body.setAttribute('data-theme', themeToggle.checked ? 'dark' : 'light');
     });
-  } else {
-    tracksEl.className = 'list';
-    viewTracks.forEach((t, idx) => {
-      const el = document.createElement('div');
-      el.className = 'card';
-      el.style.flexDirection = 'row'; el.style.alignItems='center';
-      el.innerHTML = `
-        <div style="width:90px;height:90px;flex:0 0 90px;overflow:hidden"><img src="${escapeHtml(t.art || `https://via.placeholder.com/300x300?text=Music`)}" style="width:100%;height:100%;object-fit:cover" onerror="this.src='https://via.placeholder.com/300x300?text=Music'"></div>
-        <div style="flex:1;padding:10px">
-          <div class="title">${escapeHtml(t.name)}</div>
-          <div class="sub">${escapeHtml(getArtistFromName(t.name))}</div>
-        </div>
-        <div style="padding-right:10px;display:flex;flex-direction:column;gap:6px">
-          <button class="smallbtn" onclick="playFromView(${idx})">Play</button>
-          <button class="smallbtn" onclick="enqueue(${idx})">➕ Queue</button>
-          <button class="smallbtn" onclick="openPlaylistMenu(event, ${idx})">Add →</button>
-        </div>
-      `;
-      tracksEl.appendChild(el);
-    });
-  }
-}
 
-/* attempt to guess artist from filename */
-function getArtistFromName(name){
-  // common patterns "Artist - Title" or "Title - Artist"
-  if (!name) return '';
-  const parts = name.split(' - ');
-  if (parts.length === 2) {
-    // pick shorter as artist heuristics
-    return parts[0].length < parts[1].length ? parts[0] : parts[1];
-  }
-  // fallback empty
-  return '';
-}
-
-/* ========== Playback ========== */
-function playFromView(viewIdx){
-  currentIndex = viewIdx;
-  const t = viewTracks[currentIndex];
-  if (!t) return;
-  const url = `https://docs.google.com/uc?export=download&id=${t.id}`;
-  audio.src = url;
-  nowArt.src = t.art || 'https://via.placeholder.com/400x400?text=Music';
-  nowTitle.textContent = t.name;
-  nowArtist.textContent = getArtistFromName(t.name);
-  isPlaying = true;
-  audio.play().catch(()=>{});
-  playPauseBtn.textContent = '⏸️';
-}
-
-function enqueue(viewIdx){
-  queue.push(viewIdx);
-  updateQueueCount();
-  alert('Added to queue');
-}
-
-function togglePlay(){
-  if (!audio.src){
-    if (viewTracks.length>0) return playFromView(0);
-    return;
-  }
-  if (audio.paused) { audio.play(); isPlaying = true; playPauseBtn.textContent='⏸️'; }
-  else { audio.pause(); isPlaying = false; playPauseBtn.textContent='▶️'; }
-}
-
-function prevTrack(){
-  if (audio.currentTime > 3){ audio.currentTime = 0; return; }
-  if (shuffle){
-    playFromView(Math.floor(Math.random()*viewTracks.length));
-    return;
-  }
-  if (currentIndex > 0) playFromView((currentIndex-1+viewTracks.length)%viewTracks.length);
-  else if (repeatMode===1) playFromView(viewTracks.length-1);
-}
-
-function nextTrack(){
-  if (repeatMode === 2){ audio.currentTime = 0; audio.play(); return; } // repeat one
-  if (shuffle){
-    playFromView(Math.floor(Math.random()*viewTracks.length));
-    return;
-  }
-  if (queue.length>0){
-    const nextIdx = queue.shift();
-    updateQueueCount();
-    playFromView(nextIdx);
-    return;
-  }
-  if (currentIndex < viewTracks.length-1) playFromView(currentIndex+1);
-  else {
-    if (repeatMode===1) playFromView(0); // loop all
-    else { // stop
-      audio.pause(); audio.currentTime=0; isPlaying=false; playPauseBtn.textContent='▶️';
+    // ==== Util functions ====
+    function formatTime(sec){
+      if (!sec || isNaN(sec)) return '0:00';
+      const s = Math.floor(sec % 60).toString().padStart(2,'0');
+      const m = Math.floor(sec/60);
+      return `${m}:${s}`;
     }
-  }
-}
+    function escapeHtml(s){ return (s||'').toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
+    function escapeJS(s){ return (s||'').toString().replaceAll("'", "\\'"); }
 
-/* audio events */
-audio.addEventListener('timeupdate', ()=>{
-  if (audio.duration) {
-    const percent = Math.floor((audio.currentTime / audio.duration) * 100);
-    seek.value = percent;
-    timeLabel.textContent = `${formatTime(audio.currentTime)} / ${formatTime(audio.duration)}`;
-  } else {
-    seek.value = 0;
-    timeLabel.textContent = formatTime(audio.currentTime);
-  }
-});
-audio.addEventListener('ended', nextTrack);
-
-/* seek */
-seek.addEventListener('input', ()=>{
-  if (!audio.duration) return;
-  const pct = seek.value/100;
-  audio.currentTime = pct * audio.duration;
-});
-
-/* ========== UI actions ========== */
-viewToggle.addEventListener('click', ()=>{
-  isGrid = !isGrid;
-  viewToggle.textContent = isGrid ? 'Grid' : 'List';
-  renderTracks();
-});
-
-shuffleBtn.addEventListener('click', ()=>{
-  shuffle = !shuffle;
-  shuffleBtn.textContent = shuffle ? 'Shuffle ✓' : 'Shuffle ⤨';
-});
-
-repeatBtn.addEventListener('click', ()=>{
-  repeatMode = (repeatMode+1) % 3;
-  repeatBtn.textContent = repeatMode===0 ? 'Repeat: Off' : repeatMode===1 ? 'Repeat: All' : 'Repeat: One';
-});
-
-/* ========== search & sort ========== */
-searchInput.addEventListener('input', ()=>{
-  const q = searchInput.value.toLowerCase();
-  viewTracks = tracks.filter(t => t.name.toLowerCase().includes(q));
-  renderTracks();
-});
-
-document.getElementById('sortBtn').addEventListener('click', ()=>{
-  tracks.sort((a,b)=>a.name.localeCompare(b.name));
-  viewTracks = tracks.slice();
-  renderTracks();
-});
-
-/* ========== Playlists ========== */
-function savePlaylists(){ localStorage.setItem('mm_playlists', JSON.stringify(playlists)); renderPlaylistList(); }
-
-function createPlaylist(){
-  const name = document.getElementById('newPlaylistName').value.trim();
-  if (!name) return alert('Enter a playlist name');
-  if (playlists[name]) return alert('Playlist exists');
-  playlists[name] = [];
-  savePlaylists();
-  document.getElementById('newPlaylistName').value = '';
-}
-
-function renderPlaylistList(){
-  playlistList.innerHTML = '';
-  Object.keys(playlists).forEach(name=>{
-    const el = document.createElement('div');
-    el.style.display='flex'; el.style.justifyContent='space-between'; el.style.padding='6px 0';
-    el.innerHTML = `<div style="cursor:pointer;color:var(--muted)" onclick="openPlaylistView('${escapeJS(name)}')">${escapeHtml(name)}</div>
-                    <div style="display:flex;gap:6px">
-                      <button class="smallbtn" onclick="renamePlaylist(event,'${escapeJS(name)}')">✏️</button>
-                      <button class="smallbtn" onclick="deletePlaylist(event,'${escapeJS(name)}')">🗑</button>
-                    </div>`;
-    playlistList.appendChild(el);
-  });
-}
-function openPlaylistView(name){
-  // show playlist tracks in viewTracks
-  viewTracks = (playlists[name] || []).map(item => {
-    // item stored as file id; find file metadata
-    const found = tracks.find(t => t.id === item);
-    return found ? found : {id:item, name:'(missing file)', art:''};
-  });
-  renderTracks();
-}
-function renamePlaylist(e, oldName){
-  e.stopPropagation();
-  const newName = prompt('New name', oldName);
-  if (!newName) return;
-  playlists[newName] = playlists[oldName]; delete playlists[oldName]; savePlaylists();
-}
-function deletePlaylist(e,name){
-  e.stopPropagation();
-  if (!confirm(`Delete playlist "${name}"?`)) return;
-  delete playlists[name]; savePlaylists();
-}
-function addToPlaylist(name, viewIdx){
-  const t = viewTracks[viewIdx];
-  if (!t) return;
-  if (!playlists[name]) playlists[name]=[];
-  if (!playlists[name].includes(t.id)){
-    playlists[name].push(t.id);
-    savePlaylists();
-    alert(`Added to ${name}`);
-  } else alert('Already in playlist');
-}
-
-/* ========== playlist menu UI ========== */
-let activeMenu;
-function openPlaylistMenu(e, viewIdx){
-  e.stopPropagation();
-  closePlaylistMenu();
-  const menu = document.createElement('div');
-  menu.className = 'playlist-menu';
-  menu.style.left = e.pageX + 'px';
-  menu.style.top = e.pageY + 'px';
-  if (Object.keys(playlists).length === 0) {
-    menu.innerHTML = `<div style="padding:6px;color:var(--muted)">No playlists</div>`;
-  } else {
-    Object.keys(playlists).forEach(name=>{
-      const it = document.createElement('div');
-      it.style.padding='6px 10px'; it.style.cursor='pointer';
-      it.textContent = name;
-      it.onclick = ()=>{ addToPlaylist(name, viewIdx); closePlaylistMenu(); };
-      menu.appendChild(it);
-    });
-  }
-  document.body.appendChild(menu);
-  activeMenu = menu;
-  menu.onmouseleave = closePlaylistMenu;
-}
-function closePlaylistMenu(){ if (activeMenu){ activeMenu.remove(); activeMenu = null; } }
-document.addEventListener('click', closePlaylistMenu);
-
-/* ========== queue UI ========== */
-function updateQueueCount(){ queueCount.textContent = queue.length; }
-
-/* ========== small helpers ========== */
-function escapeHtml(s){ return (s||'').toString().replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;'); }
-function escapeJS(s){ return (s||'').toString().replaceAll("'", "\\'"); }
-
-/* ========== Init ========= */
-renderPlaylistList();
-loadAllFromDrive();
-
-/* showAll helper */
-function showAll(){ viewTracks = tracks.slice(); renderTracks(); }
-
-/* show playlists and search */
-function showPlaylists(){ // just focus playlist area - show nothing else
-  viewTracks = [];
-  renderTracks();
-}
-function showSearch(){ searchInput.focus(); }
-
-/* ========== Keyboard shortcuts (optional) ========== */
-document.addEventListener('keydown', (e) => {
-  if (e.code === 'Space' && document.activeElement.tagName !== 'INPUT') { e.preventDefault(); togglePlay(); }
-  if (e.code === 'ArrowRight') nextTrack();
-  if (e.code === 'ArrowLeft') prevTrack();
-});
-</script>
-</body>
-</html>
+    // ==== Google Drive API fetch ====
+    async function loadAllFromDrive() {
+      tracks = [];
+      let pageToken = '';
+      try {
+        do {
+          const q = encodeURIComponent(`'${folderId}' in parents and (mimeType contains 'audio/')`);
+          const url = `https://www.googleapis.com/drive/v3/files?q=${q}&fields=nextPageToken,files(id,name,mimeType,thumbnailLink,md5Checksum)&pageSize=100${pageToken
